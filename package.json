@@ -1,0 +1,24 @@
+{
+  "name": "telegram-compliments-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon ./server/index.js"
+  },
+  "keywords": [
+    "telegram",
+    "bot",
+    "telegram-bot"
+  ],
+  "author": "Zonathrope",
+  "license": "ISC",
+  "dependencies": {
+    "mongodb": "^4.1.0",
+    "telegraf": "^4.4.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.12"
+  }
+}

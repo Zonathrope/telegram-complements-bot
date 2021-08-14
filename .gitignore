@@ -1,0 +1,4 @@
+node_modules
+data/bot-api.json
+.idea
+package-lock.json
