@@ -1,7 +1,7 @@
 import fs from 'fs'
 import mongoose from "mongoose";
-import User from '../../data/structures/User.js'
-import Time from '../../data/structures/Time.js'
+import User from './structures/User.js'
+import Time from './structures/Time.js'
 
 class Database {
     constructor(link) {
@@ -93,7 +93,7 @@ class Database {
     }
 }
 
-const string = fs.readFileSync('url.txt').toString()
+const string = fs.readFileSync('C:\\Users\\Steam\\WebstormProjects\\telegram-compliments-bot\\data\\url.txt').toString()
 const db = new Database(string)
 const array = await db.getUsersOnCurrentTime("02:00")
 console.log(array)
