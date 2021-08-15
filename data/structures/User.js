@@ -5,6 +5,6 @@ const UserSchema = new mongoose.Schema({
     isActive: Boolean
 })
 
-const user = mongoose.model('UserModel', UserSchema)
+const user = mongoose.model('User', UserSchema)
 
 export default user

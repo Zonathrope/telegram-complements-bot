@@ -2,8 +2,12 @@ import mongoose from 'mongoose'
 
 const TimeSchema = new mongoose.Schema({
     time: String,
-    user_id: String
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref:"User"
+    }
 })
 
-const time = mongoose.model('TimeModel', TimeSchema)
-module.exports = time
+const time = mongoose.model('Time', TimeSchema)
+
+export default time
