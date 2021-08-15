@@ -1,11 +1,14 @@
 import {MongoClient} from 'mongodb'
+import fs from 'fs'
 
 class Database {
-    constructor() {
-        this.client = new MongoClient(`mongodb+srv://qwerty:12345@cluster0.246vn.mongodb.net/complements-telegram-bot?retryWrites=true&w=majority`)
+    client;
+    constructor(link) {
+        this.client = new MongoClient(link)
     }
 
     async addUser(data) {
+        console.log(this.client.db().collection('users').find())
         try {
             await this.client.db().collection('users').insertOne(data)
         } catch (e) {
@@ -46,6 +49,6 @@ class Database {
         return this.client.db().collection('time').find({time: time});
     }
 }
-
-
-
+const string = fs.readFileSync('url.txt').toString()
+const db = new Database(string)
+console.log(db.addUser({user_id: 555, isActive:true}))
