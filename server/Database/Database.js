@@ -1,54 +1,99 @@
-import {MongoClient} from 'mongodb'
 import fs from 'fs'
+import mongoose from "mongoose";
+import User from '../../data/structures/User.js'
+import Time from '../../data/structures/Time.js'
 
 class Database {
-    client;
     constructor(link) {
-        this.client = new MongoClient(link)
+        mongoose.connect(link)
+            .then(() => console.log('Connected'))
+            .catch(e => console.error(e))
+        this.time_schema = Time
+        this.user_schema = User
     }
 
-    async addUser(data) {
-        console.log(this.client.db().collection('users').find())
+    //adding new User to UserSchema
+    //user_id - string, isActive?: boolean
+    async addUser(userID, isActive = true) {
         try {
-            await this.client.db().collection('users').insertOne(data)
+            await this.user_schema.create({
+                user_id: userID,
+                isActive
+            })
         } catch (e) {
             console.error(e)
         }
     }
 
-    async isUserActive(userID) {
+    async getUser(userID){
+        try{
+            return this.user_schema.findOne({user_id: userID})
+        } catch (e) {
+            console.error(e)
+        }
+    }
+
+    async setUserActive(userID, active){
+        try{
+            await this.user_schema.updateOne({user_id: userID},{isActive: active})
+        } catch (e) {
+            console.error(e)
+        }
+    }
+
+    //taking a userID: string and returning isActive:Boolean
+    async getUserActive(userID) {
         try {
-            const user = await this.client.db().collection('users').findOne({user_id: userID})
+            const user = await this.user_schema.find({user_id: userID})
             return user.isActive
         } catch (e) {
             console.error(e)
         }
     }
 
-    async changeUserTime(userID, arrayOfTime) {
+    // taking userID:string, and newTime:Array<string>|string
+    async changeUserTime(userID, newTime) {
         try {
-            const json = await this.client.db().collection('time')
+            const user = await this.getUser(userID)
+            await this.time_schema.deleteMany({user: user._id})
+            await this.insertNewUserTime(user, newTime)
         } catch (e) {
-            console.log(e)
+            console.error(e)
         }
     }
 
-    async insertTime(userID, newTime) {
+    // taking userID:string, and newTime:Array<string>|string
+    async insertNewUserTime(user, newTime) {
         if (Array.isArray(newTime)) {
             const arrayOfTime = []
             for (let i = 0; i < newTime.length; i++) {
-                arrayOfTime.push({user_id: userID, time: newTime[i]})
+                arrayOfTime.push({user: user._id, time: newTime[i]})
             }
-            await this.client.db().collection('time').insertMany(arrayOfTime);
+            await this.time_schema.create(arrayOfTime);
         } else {
-            await this.client.db().collection('time').insertOne({user_id: userID, time: newTime});
+            await this.time_schema.create({user: user._id, time: newTime});
         }
     }
 
-    async getTime(time) {
-        return this.client.db().collection('time').find({time: time});
+    // time:string return array of ID of active users
+    async getUsersOnCurrentTime(time) {
+        const arr = await this.time_schema
+            .find({time: time})
+            .populate({
+                path:"user",
+                model:"User",
+                select: 'user_id isActive',
+                match: {isActive: true}
+            })
+            .exec()
+
+        return arr
+            .filter(obj => obj.user?.user_id)
+            .map(obj => obj.user.user_id)
     }
 }
+
 const string = fs.readFileSync('url.txt').toString()
 const db = new Database(string)
-console.log(db.addUser({user_id: 555, isActive:true}))
+const array = await db.getUsersOnCurrentTime("02:00")
+console.log(array)
