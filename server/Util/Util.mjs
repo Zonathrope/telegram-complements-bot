@@ -12,8 +12,8 @@ export function timer(cb) {
     })();
 }
 
-export async function readJson(filename) {
-    return JSON.parse(fs.readFileSync('../data/'+filename).toString())
+export async function readJson(filepath) {
+    return JSON.parse(await fs.readFileSync(filepath))
 }
 
 
