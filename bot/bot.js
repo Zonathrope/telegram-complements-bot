@@ -1,36 +1,33 @@
-import {Markup, Telegraf} from 'telegraf'
+import {Markup, Telegraf, Scenes, session} from 'telegraf'
 import {readJson} from '../server/Util/Util.mjs'
 import Database from '../server/Database/Database.js'
-import * as fs from "fs";
+import ScenesGenerator from "./Scenes/SceneGenerator.js";
 
-const data = await fs.readFileSync('../data/data.json')
+
+const data = await readJson('D:\\Projects\\telegram-complements-bot\\data\\config.json')
 
 const bot = new Telegraf(data.key)
-const db = new Database(data.dbLink)
-await db.addUser("555")
+
+const generator = new ScenesGenerator(data.dbLink)
+const menuScene = generator.menuGenerator()
+
+const stage = new Scenes.Stage([menuScene])
+bot.use(session())
+bot.use(stage.middleware())
+
+bot.start(async (ctx) => {
+    const userName = ctx.update.message.from.first_name
+    await ctx.reply(`Привет, ${userName}!`)
+    await ctx.scene.enter('menu')
+})
+
+bot.command('/menu', async (ctx) => {
+    await ctx.scene.enter('menu')
+})
 
 
-console.log( )
-//
-// bot.start((ctx) => ctx.reply(`Привет, ${ctx.update.message.from.first_name}!`))
-//
-// bot.command('/menu', async (ctx) => {
-//     return await ctx.reply("Меню:", Markup
-//         .keyboard([
-//             ['Включить', 'Выключить'], // Row1 with 2 buttons
-//             ['Изменить время'], // Row2 with 2 buttons
-//             ['Связаться с создателем', 'Поддержать'] // Row3 with 3 buttons
-//         ])
-//         .resize()
-//     )
-// })
-//
-// bot.hears('Включить', async (ctx) =>{
-//     return await ctx.reply('Включен!')
-// })
-//
-// bot.launch().then()
-//
-// // Enable graceful stop
-//     process.once('SIGINT', () => bot.stop('SIGINT'))
-//     process.once('SIGTERM', () => bot.stop('SIGTERM'))
+await bot.launch()
+
+// Enable graceful stop
+process.once('SIGINT', () => bot.stop('SIGINT'))
+process.once('SIGTERM', () => bot.stop('SIGTERM'))

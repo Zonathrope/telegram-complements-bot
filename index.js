@@ -1,5 +1,5 @@
 import {Markup, Telegraf} from 'telegraf'
-import {readJson, writeJson} from './Util/Util.mjs'
+import {readJson, writeJson} from './server/Util/Util.mjs'
 
 
 // readJson('bot-api.json').then(data => main(data.key))
