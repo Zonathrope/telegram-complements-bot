@@ -1,5 +1,5 @@
 node_modules
-data/bot-api.json
-.idea
 package-lock.json
-url.txt
+.idea
+data/config.json
+config.json

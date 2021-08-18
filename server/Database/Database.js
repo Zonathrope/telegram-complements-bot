@@ -1,9 +1,8 @@
-import fs from 'fs'
 import mongoose from "mongoose";
 import User from './structures/User.js'
 import Time from './structures/Time.js'
 
-class Database {
+export default class Database {
     constructor(link) {
         mongoose.connect(link)
             .then(() => console.log('Connected'))
@@ -25,27 +24,18 @@ class Database {
         }
     }
 
-    async getUser(userID){
-        try{
+    async getUser(userID) {
+        try {
             return this.user_schema.findOne({user_id: userID})
         } catch (e) {
             console.error(e)
         }
+        return null
     }
 
-    async setUserActive(userID, active){
-        try{
-            await this.user_schema.updateOne({user_id: userID},{isActive: active})
-        } catch (e) {
-            console.error(e)
-        }
-    }
-
-    //taking a userID: string and returning isActive:Boolean
-    async getUserActive(userID) {
+    async setUserActive(userID, active) {
         try {
-            const user = await this.user_schema.find({user_id: userID})
-            return user.isActive
+            await this.user_schema.updateOne({user_id: userID}, {isActive: active})
         } catch (e) {
             console.error(e)
         }
@@ -80,8 +70,8 @@ class Database {
         const arr = await this.time_schema
             .find({time: time})
             .populate({
-                path:"user",
-                model:"User",
+                path: "user",
+                model: "User",
                 select: 'user_id isActive',
                 match: {isActive: true}
             })
@@ -93,7 +83,3 @@ class Database {
     }
 }
 
-const string = fs.readFileSync('C:\\Users\\Steam\\WebstormProjects\\telegram-compliments-bot\\data\\url.txt').toString()
-const db = new Database(string)
-const array = await db.getUsersOnCurrentTime("02:00")
-console.log(array)
