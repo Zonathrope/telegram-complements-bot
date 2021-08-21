@@ -12,6 +12,18 @@ export function timer(cb) {
     })();
 }
 
+export async function msgWithDelay(callback){
+    //initializing delay to send msg
+    const delay = randomNumb(0, 86400000)
+    setTimeout(async () =>{
+       await callback()
+    },delay)
+}
+
+export function randomNumb(min, max){
+    return Math.trunc(Math.random() * max - min)
+}
+
 export async function readJson(filepath) {
     return JSON.parse(await fs.readFileSync(filepath))
 }
