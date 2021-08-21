@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
 import User from './structures/User.js'
 import Time from './structures/Time.js'
+import Compliment from './structures/Compliment'
+import {randomNumb} from "../Util/Util.mjs";
 
 export default class Database {
     constructor(link) {
@@ -9,6 +11,7 @@ export default class Database {
             .catch(e => console.error(e))
         this.time_schema = Time
         this.user_schema = User
+        this.compliment_schema = Compliment
     }
 
     //adding new User to UserSchema
@@ -31,6 +34,14 @@ export default class Database {
             console.error(e)
         }
         return null
+    }
+
+    async getAllActiveUsers() {
+        try {
+            return this.user_schema.find({isActive: true})
+        } catch (e) {
+            console.error(e)
+        }
     }
 
     async setUserActive(userID, active) {
@@ -80,6 +91,21 @@ export default class Database {
         return arr
             .filter(obj => obj.user?.user_id)
             .map(obj => obj.user.user_id)
+    }
+
+    async getCompliment(compliment_id) {
+        return this.compliment_schema.findOne({compliment_id})
+    }
+
+    async getRandomCompliment(){
+        const id = randomNumb(0, await this.getAmountOfCompliments())
+        const {text} = await this.getCompliment(id)
+        return text
+    }
+
+    async getAmountOfCompliments() {
+        const arrayOfCompliments = await this.compliment_schema.find()
+        return arrayOfCompliments.length
     }
 }
 
