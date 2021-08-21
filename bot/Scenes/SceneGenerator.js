@@ -1,25 +1,25 @@
 import {Markup, Scenes} from 'telegraf'
-import Database from "../../server/Database/Database.js";
+import {msgWithDelay, randomNumb} from "../../server/Util/Util.mjs";
 
 export default class ScenesGenerator {
-    constructor(dbLink) {
-        this.db = new Database(dbLink)
+    constructor(db) {
+        this.db = db
     }
+
     menuGenerator() {
         const menu = new Scenes.BaseScene("menu")
 
         menu.enter(async (ctx) => {
             const userTg_id = ctx.update.message.from.id
-            if(await this.db.getUser(`${userTg_id}`) === null){
+            if (await this.db.getUser(`${userTg_id}`) === null) {
                 await this.db.addUser(`${userTg_id}`)
-                await ctx.reply("Вы были добавлены в базу")
             }
-            const isTurned = (await this.db.getUser(`${userTg_id}`)).isActive
-                ? 'Выключить'
-                : 'Включить'
-            await ctx.reply('text', Markup
+            const {isActive: isTurned} = (await this.db.getUser(`${userTg_id}`))
+            const replyText = isTurned ? "бот включен" : "бот выключен"
+            const buttonText = isTurned ? 'Выключить' : 'Включить'
+            await ctx.reply(replyText, Markup
                 .keyboard([
-                    [`${isTurned}`],
+                    [`${buttonText}`],
                     ['Моментальная помощь'],
                     ['Связаться с создателем', 'Поддержать']
                 ])
@@ -27,22 +27,26 @@ export default class ScenesGenerator {
             )
         })
 
-        menu.hears('Связаться с создателем', async (ctx) => {
-            await ctx.replyWithContact("+380984713688", 'Alex')
-        })
-
         menu.hears('Включить', async (ctx) => {
             const userTg_id = ctx.update.message.from.id
-            await this.db.setUserActive(`${userTg_id}`,true)
-            await ctx.reply('бот включён!')
+            await this.db.setUserActive(`${userTg_id}`, true)
             await ctx.scene.reenter()
         })
 
         menu.hears('Выключить', async (ctx) => {
             const userTg_id = ctx.update.message.from.id
-            await this.db.setUserActive(`${userTg_id}`,false)
-            await ctx.reply('бот выключён!')
+            await this.db.setUserActive(`${userTg_id}`, false)
             await ctx.scene.reenter()
+        })
+
+        menu.hears('моментальная помощь', async (ctx) => {
+            const id = randomNumb(0, await this.db.getAmountOfCompliments())
+            const compliment = await this.db.getCompliment(id)
+            await ctx.reply(compliment)
+        })
+
+        menu.hears('Связаться с создателем', async (ctx) => {
+            await ctx.replyWithContact("+380984713688", 'Alex')
         })
         return menu
     }
